@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+import { AnimatePresence, useInView } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,41 +20,43 @@ import {
   Search,
   Download,
   Phone,
-  MessageCircle,
   BarChart3,
   Package,
   Users,
-  BookOpen,
   ChevronDown,
 } from "lucide-react";
 
 /* ================================================================== */
-/*  Animation                                                          */
+/*  Scroll-in animation hook — visible by default, animates on enter   */
 /* ================================================================== */
-const fadeInUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
-};
-const fadeInLeft = {
-  hidden: { opacity: 0, x: -30 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
-};
-const fadeInRight = {
-  hidden: { opacity: 0, x: 30 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
-};
-const stagger = {
-  hidden: { opacity: 0 },
-  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.1 } },
-};
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.4 } },
-};
+function ScrollIn({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  return (
+    <div
+      ref={ref}
+      className={cn("transition-all duration-700 ease-out", className)}
+      style={{
+        opacity: isInView ? 1 : 0,
+        transform: isInView ? "translateY(0)" : "translateY(30px)",
+        transitionDelay: `${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
-/* ================================================================== */
-/*  Counter Animation Hook                                             */
-/* ================================================================== */
+function ScrollGrid({ children, className }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  return (
+    <div ref={ref} className={className} style={{ opacity: isInView ? 1 : 0, transition: "opacity 0.6s ease-out 0.1s" }}>
+      {children}
+    </div>
+  );
+}
+
 function useCountUp(target: number, duration = 2000) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
@@ -563,11 +565,10 @@ function CountUpMetric({
   const { count, ref } = useCountUp(isNumeric ? numValue : 0);
 
   return (
-    <motion.div
+    <div
       ref={ref}
-      variants={fadeInUp}
       className="text-center group cursor-default"
-    >
+  >
       <div className="relative">
         <div className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-2 transition-transform duration-300 group-hover:scale-105">
           {isNumeric ? (
@@ -588,7 +589,7 @@ function CountUpMetric({
       <div className="text-xs text-white/50 max-w-[200px] mx-auto leading-relaxed">
         {desc}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -602,10 +603,9 @@ function ProductSpotlightCard({
   skuCount: string;
 }) {
   return (
-    <motion.div
-      variants={scaleIn}
+    <div
       className="group bg-white rounded-lg shadow-card-sm hover:shadow-card-lg transition-all duration-300 overflow-hidden"
-    >
+  >
       {/* Image placeholder */}
       <div className="aspect-square bg-gradient-to-br from-bg-secondary to-bg-secondary/80 flex items-center justify-center overflow-hidden">
         <Package className="w-16 h-16 text-text-muted/30 group-hover:scale-110 transition-transform duration-500" />
@@ -617,20 +617,19 @@ function ProductSpotlightCard({
         <Link
           href="/products"
           className="text-xs font-semibold text-primary-accent flex items-center gap-1 hover:underline"
-        >
+      >
           View {skuCount} SKUs →
         </Link>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 function TestimonialCard({ t }: { t: Testimonial }) {
   return (
-    <motion.div
-      variants={fadeInUp}
+    <div
       className="bg-white rounded-lg border border-border-light p-6 md:p-8 h-full flex flex-col"
-    >
+  >
       <div className="flex gap-1 mb-4">
         {[...Array(5)].map((_, i) => (
           <Star key={i} className="w-4 h-4 fill-primary-accent text-primary-accent" />
@@ -653,22 +652,21 @@ function TestimonialCard({ t }: { t: Testimonial }) {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 function DifferentiatorCard({ d }: { d: Differentiator }) {
   return (
-    <motion.div
-      variants={fadeInUp}
+    <div
       className="bg-white rounded-lg p-6 md:p-8 border border-border-light hover:shadow-card-md hover:-translate-y-1 transition-all duration-300 group"
-    >
+  >
       <div className="w-10 h-10 rounded-lg bg-primary-accent/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
         <CheckCircle2 className="w-5 h-5 text-primary-accent" />
       </div>
       <h4 className="text-sm font-bold uppercase tracking-[0.5px] mb-2">{d.title}</h4>
       <p className="text-sm text-text-secondary leading-relaxed">{d.description}</p>
-    </motion.div>
+    </div>
   );
 }
 
@@ -690,7 +688,7 @@ export default function SolutionsPage() {
           "relative min-h-[70vh] flex items-center overflow-hidden",
           `bg-gradient-to-br ${seg.heroBg}`
         )}
-      >
+    >
         {/* Decorative gradient orbs */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-primary-accent/20 blur-[120px]" />
@@ -698,36 +696,31 @@ export default function SolutionsPage() {
         </div>
 
         <Container className="relative z-10 pt-32 pb-20">
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={stagger}
+          <div
             className="max-w-3xl"
-          >
-            <motion.div variants={fadeInUp}>
+        >
+            <div>
               <Badge variant="accent" className="mb-4">
                 SOLUTIONS FOR {seg.label.toUpperCase().replace("&", "AND")}
               </Badge>
-            </motion.div>
-            <motion.h1
-              variants={fadeInUp}
+            </div>
+            <h1
               className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4"
-            >
+          >
               {seg.headline}
-            </motion.h1>
-            <motion.p
-              variants={fadeInUp}
+            </h1>
+            <p
               className="text-lg text-white/60 max-w-xl mb-8"
-            >
+          >
               {seg.subline}
-            </motion.p>
-            <motion.div variants={fadeInUp} className="flex flex-wrap gap-3">
+            </p>
+            <div className="flex flex-wrap gap-3">
               <Link href="/contact">
                 <Button
                   variant="accent"
                   size="lg"
                   className="bg-primary-accent text-primary-dark hover:bg-white"
-                >
+              >
                   CHECK PART AVAILABILITY
                   <Search className="w-4 h-4" />
                 </Button>
@@ -737,24 +730,21 @@ export default function SolutionsPage() {
                   variant="outline"
                   size="lg"
                   className="border-white/40 text-white hover:bg-white hover:text-primary-dark"
-                >
+              >
                   DOWNLOAD CATALOG
                   <Download className="w-4 h-4" />
                 </Button>
               </Link>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </Container>
 
         {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1, y: [0, 8, 0] }}
-          transition={{ delay: 1, y: { duration: 2, repeat: Infinity } }}
+        <div
           className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/30"
         >
           <ChevronDown className="w-6 h-6" />
-        </motion.div>
+        </div>
       </section>
 
       {/* ================================================================ */}
@@ -773,12 +763,12 @@ export default function SolutionsPage() {
                     ? "border-primary-accent text-primary-accent"
                     : "border-transparent text-text-secondary hover:text-text-primary"
                 )}
-              >
+            >
                 <span
                   className={cn(
                     activeTab === s.id ? "text-primary-accent" : "text-text-muted"
                   )}
-                >
+              >
                   {s.icon}
                 </span>
                 {s.label}
@@ -792,25 +782,17 @@ export default function SolutionsPage() {
       {/*  CONTENT — AnimatePresence per segment                          */}
       {/* ================================================================ */}
       <AnimatePresence mode="wait">
-        <motion.div
+        <div
           key={activeTab}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
         >
           {/* ================================================================ */}
           {/*  SECTION 2: PAIN POINTS — 情绪共鸣带                             */}
           {/* ================================================================ */}
           <section className="py-20 md:py-24 bg-bg-secondary">
             <Container>
-              <motion.div
-                variants={stagger}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-              >
-                <motion.div variants={fadeInUp} className="text-center mb-12">
+              <div
+            >
+                <div className="text-center mb-12">
                   <Badge variant="accent" className="mb-3">
                     THE PROBLEMS WE SOLVE
                   </Badge>
@@ -822,18 +804,16 @@ export default function SolutionsPage() {
                   <p className="text-text-secondary max-w-xl mx-auto">
                     Here&apos;s what they told us — and how SAFORS addresses each one.
                   </p>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  variants={stagger}
+                <div
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
-                >
+              >
                   {seg.painPoints.map((p, i) => (
-                    <motion.div
+                    <div
                       key={p.title}
-                      variants={fadeInUp}
                       className="group bg-white rounded-lg shadow-card-sm hover:shadow-card-md hover:-translate-y-1 transition-all duration-300 p-6"
-                    >
+                  >
                       <div className="w-10 h-10 rounded-full bg-error/10 flex items-center justify-center mb-3">
                         <XCircle className="w-5 h-5 text-error" />
                       </div>
@@ -843,10 +823,10 @@ export default function SolutionsPage() {
                       <p className="text-sm text-text-secondary leading-relaxed">
                         {p.scene}
                       </p>
-                    </motion.div>
+                    </div>
                   ))}
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
             </Container>
           </section>
 
@@ -855,28 +835,23 @@ export default function SolutionsPage() {
           {/* ================================================================ */}
           <section className="py-20 md:py-24">
             <Container>
-              <motion.div
-                variants={stagger}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-              >
-                <motion.div variants={fadeInUp} className="text-center mb-14">
+              <div
+            >
+                <div className="text-center mb-14">
                   <Badge variant="accent" className="mb-3">
                     HOW SAFORS SOLVES EACH PROBLEM
                   </Badge>
                   <h2 className="text-2xl md:text-3xl font-bold text-text-primary">
                     Before &amp; After
                   </h2>
-                </motion.div>
+                </div>
 
                 <div className="space-y-4">
                   {seg.beforeAfter.map((ba, i) => (
-                    <motion.div
+                    <div
                       key={i}
-                      variants={fadeInUp}
                       className="grid grid-cols-1 md:grid-cols-2 rounded-lg overflow-hidden border border-border-light"
-                    >
+                  >
                       {/* BEFORE */}
                       <div className="bg-[#FEF2F2] p-6 md:p-8">
                         <div className="flex items-center gap-2 mb-2">
@@ -901,10 +876,10 @@ export default function SolutionsPage() {
                         </p>
                         <p className="text-xs text-text-secondary">{ba.afterData}</p>
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             </Container>
           </section>
 
@@ -916,25 +891,20 @@ export default function SolutionsPage() {
               <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-primary-accent blur-[150px]" />
             </div>
             <Container className="relative z-10">
-              <motion.div
-                variants={stagger}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-              >
-                <motion.div variants={fadeInUp} className="text-center mb-14">
+              <div
+            >
+                <div className="text-center mb-14">
                   <Badge variant="accent" className="mb-3">
                     NUMBERS THAT MATTER TO YOUR BOTTOM LINE
                   </Badge>
                   <h2 className="text-2xl md:text-3xl font-bold text-white">
                     Data speaks louder than promises.
                   </h2>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  variants={stagger}
+                <div
                   className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12"
-                >
+              >
                   {seg.metrics.map((m) => (
                     <CountUpMetric
                       key={m.label}
@@ -944,8 +914,8 @@ export default function SolutionsPage() {
                       suffix={m.label === "SAMPLE TURNAROUND" ? "H" : "%"}
                     />
                   ))}
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
             </Container>
           </section>
 
@@ -954,30 +924,25 @@ export default function SolutionsPage() {
           {/* ================================================================ */}
           <section className="py-20 md:py-24 bg-bg-secondary">
             <Container>
-              <motion.div
-                variants={stagger}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-              >
-                <motion.div variants={fadeInUp} className="text-center mb-12">
+              <div
+            >
+                <div className="text-center mb-12">
                   <Badge variant="accent" className="mb-3">
                     WHAT OUR CUSTOMERS ORDER MOST
                   </Badge>
                   <h2 className="text-2xl md:text-3xl font-bold text-text-primary">
                     Top categories for {seg.label}
                   </h2>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  variants={stagger}
+                <div
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                >
+              >
                   {seg.products.map((p) => (
                     <ProductSpotlightCard key={p.name} {...p} />
                   ))}
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
             </Container>
           </section>
 
@@ -986,30 +951,25 @@ export default function SolutionsPage() {
           {/* ================================================================ */}
           <section className="py-20 md:py-24">
             <Container>
-              <motion.div
-                variants={stagger}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-              >
-                <motion.div variants={fadeInUp} className="text-center mb-12">
+              <div
+            >
+                <div className="text-center mb-12">
                   <Badge variant="accent" className="mb-3">
                     WHAT OUR CUSTOMERS SAY
                   </Badge>
                   <h2 className="text-2xl md:text-3xl font-bold text-text-primary">
                     Trusted by garages worldwide
                   </h2>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  variants={stagger}
+                <div
                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                >
+              >
                   {seg.testimonials.map((t) => (
                     <TestimonialCard key={t.name} t={t} />
                   ))}
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
             </Container>
           </section>
 
@@ -1018,30 +978,25 @@ export default function SolutionsPage() {
           {/* ================================================================ */}
           <section className="py-20 md:py-24 bg-bg-secondary">
             <Container>
-              <motion.div
-                variants={stagger}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-              >
-                <motion.div variants={fadeInUp} className="text-center mb-12">
+              <div
+            >
+                <div className="text-center mb-12">
                   <Badge variant="accent" className="mb-3">
                     WHY {seg.label.toUpperCase()} CHOOSE SAFORS
                   </Badge>
                   <h2 className="text-2xl md:text-3xl font-bold text-text-primary">
                     We compete on service, not just price.
                   </h2>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  variants={stagger}
+                <div
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
-                >
+              >
                   {seg.differentiators.map((d) => (
                     <DifferentiatorCard key={d.title} d={d} />
                   ))}
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
             </Container>
           </section>
 
@@ -1050,27 +1005,21 @@ export default function SolutionsPage() {
           {/* ================================================================ */}
           <section className="py-16 md:py-20 bg-primary-accent">
             <Container>
-              <motion.div
-                variants={stagger}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
+              <div
                 className="text-center"
-              >
-                <motion.h2
-                  variants={fadeInUp}
+            >
+                <h2
                   className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary-dark mb-4"
-                >
+              >
                   NEED TO CHECK IF A PART FITS RIGHT NOW?
-                </motion.h2>
-                <motion.p
-                  variants={fadeInUp}
+                </h2>
+                <p
                   className="text-primary-dark/70 mb-8 max-w-xl mx-auto"
-                >
+              >
                   Enter your VIN or OEM part number and get instant fitment confirmation.
-                </motion.p>
+                </p>
 
-                <motion.div variants={fadeInUp} className="max-w-2xl mx-auto">
+                <div className="max-w-2xl mx-auto">
                   <div className="flex flex-col sm:flex-row gap-3 mb-4">
                     <div className="flex-1 relative">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
@@ -1084,7 +1033,7 @@ export default function SolutionsPage() {
                       variant="primary"
                       size="lg"
                       className="bg-primary-dark text-white hover:bg-bg-dark h-14 min-w-[160px]"
-                    >
+                  >
                       CHECK FITMENT
                     </Button>
                   </div>
@@ -1094,7 +1043,7 @@ export default function SolutionsPage() {
                       <select
                         key={f}
                         className="h-10 px-4 rounded-md bg-white text-sm text-text-primary border-none focus:outline-none focus:ring-2 focus:ring-primary-dark/20"
-                      >
+                    >
                         <option value="">{f}</option>
                       </select>
                     ))}
@@ -1103,8 +1052,8 @@ export default function SolutionsPage() {
                   <p className="text-xs text-primary-dark/60">
                     Example: &quot;2019 Honda Accord 2.0L → Control Arm&quot; — Get results in seconds
                   </p>
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
             </Container>
           </section>
 
@@ -1113,33 +1062,28 @@ export default function SolutionsPage() {
           {/* ================================================================ */}
           <section className="py-20 md:py-24">
             <Container>
-              <motion.div
-                variants={stagger}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-              >
-                <motion.div variants={fadeInUp} className="text-center mb-12">
+              <div
+            >
+                <div className="text-center mb-12">
                   <Badge variant="accent" className="mb-3">
                     SAFORS ALSO SERVES
                   </Badge>
                   <h2 className="text-2xl md:text-3xl font-bold text-text-primary">
                     Not your segment? We cover more.
                   </h2>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  variants={stagger}
+                <div
                   className="grid grid-cols-1 md:grid-cols-3 gap-6"
-                >
+              >
                   {segments
                     .filter((s) => s.id !== activeTab)
                     .map((s) => (
-                      <motion.div key={s.id} variants={fadeInUp}>
+                      <div key={s.id}>
                         <button
                           onClick={() => setActiveTab(s.id)}
                           className="w-full text-left group rounded-lg overflow-hidden border border-border-light hover:shadow-card-lg transition-all duration-300"
-                        >
+                      >
                           {/* Image area */}
                           <div className="aspect-video bg-gradient-to-br from-bg-dark to-primary-dark relative flex items-center justify-center">
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -1158,10 +1102,10 @@ export default function SolutionsPage() {
                             </div>
                           </div>
                         </button>
-                      </motion.div>
+                      </div>
                     ))}
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
             </Container>
           </section>
 
@@ -1179,17 +1123,12 @@ export default function SolutionsPage() {
               />
             </div>
             <Container className="relative z-10 text-center">
-              <motion.div
-                variants={stagger}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
+              <div
                 className="max-w-3xl mx-auto"
-              >
-                <motion.h2
-                  variants={fadeInUp}
+            >
+                <h2
                   className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4"
-                >
+              >
                   READY TO STOCK SAFORS IN YOUR{" "}
                   {activeTab === "garages"
                     ? "SHOP"
@@ -1199,25 +1138,23 @@ export default function SolutionsPage() {
                     ? "FLEET"
                     : "CENTER"}
                   ?
-                </motion.h2>
-                <motion.p
-                  variants={fadeInUp}
+                </h2>
+                <p
                   className="text-lg text-white/60 mb-10 max-w-xl mx-auto"
-                >
+              >
                   Get a tailored quote, request free samples, or schedule a 15-minute video
                   call with our {seg.label.toLowerCase()} specialist.
-                </motion.p>
+                </p>
 
-                <motion.div
-                  variants={fadeInUp}
+                <div
                   className="flex flex-col sm:flex-row gap-4 justify-center"
-                >
+              >
                   <Link href="/contact">
                     <Button
                       variant="accent"
                       size="lg"
                       className="bg-primary-accent text-primary-dark hover:bg-white min-w-[200px]"
-                    >
+                  >
                       {seg.ctaPrimary}
                     </Button>
                   </Link>
@@ -1226,7 +1163,7 @@ export default function SolutionsPage() {
                       variant="outline"
                       size="lg"
                       className="border-white/40 text-white hover:bg-white hover:text-primary-dark min-w-[200px]"
-                    >
+                  >
                       {seg.ctaSecondary}
                     </Button>
                   </Link>
@@ -1235,16 +1172,16 @@ export default function SolutionsPage() {
                       variant="ghost"
                       size="lg"
                       className="text-white/70 hover:text-white min-w-[200px]"
-                    >
+                  >
                       SCHEDULE A CALL
                       <Phone className="w-4 h-4" />
                     </Button>
                   </Link>
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
             </Container>
           </section>
-        </motion.div>
+        </div>
       </AnimatePresence>
     </>
   );

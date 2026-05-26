@@ -68,9 +68,17 @@ const categoryIcons: Record<string, React.ReactNode> = {
 function HeroSection() {
   return (
     <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
-      {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0D0D0D] via-[#0D0D0D] to-[#1A1A2E] z-0" />
-      <div className="absolute inset-0 opacity-20 z-0">
+      {/* Hero background image */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src="/hero-bg.png"
+          alt="SAFORS precision auto parts manufacturing"
+          className="w-full h-full object-cover"
+        />
+      </div>
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[rgba(10,10,20,0.85)] via-[rgba(10,10,20,0.7)] to-transparent z-[1]" />
+      <div className="absolute inset-0 opacity-20 z-[1]">
         <div
           className="absolute inset-0"
           style={{
